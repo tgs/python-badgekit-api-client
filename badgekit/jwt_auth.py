@@ -24,7 +24,7 @@ def default_payload():
         'path': payload_path,
         }
 
-class JWSAuth(AuthBase):
+class JWTAuth(AuthBase):
     def __init__(self, secret, payload=default_payload(), alg='HS256'):
         """
         Create a client object that will sign requests with JSON Web Tokens.

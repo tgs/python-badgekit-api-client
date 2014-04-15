@@ -1,5 +1,7 @@
 import posixpath
 from urllib import quote_plus
+import jwt_auth
+
 
 class BadgeKitQuery(object):
     pass
@@ -34,6 +36,6 @@ class ContainerQuery(BadgeKitQuery):
 
         return posixpath.join(*list(quote_plus(part) for part in parts))
 
-
-
+    def list(self, kind):
+        pass
 
