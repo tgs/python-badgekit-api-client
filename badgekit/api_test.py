@@ -27,7 +27,7 @@ class BKAPITest(unittest.TestCase):
                 body='')
 
         a = api.BadgeKitAPI('http://example.com', 's3cr3t')
-        a.ping()
+        self.assert_(a.ping())
 
         req = httpretty.last_request()
         self.assert_('Authorization' in req.headers, 'JWT Authorization present')
@@ -35,5 +35,5 @@ class BKAPITest(unittest.TestCase):
         auth_hdr = req.headers['Authorization']
         self.assert_('JWT token=' in auth_hdr)
         token = auth_hdr[auth_hdr.find('"'):].strip('"')
+        # Throws an exception on failure to verify
         claim = from_jwt(token, 's3cr3t')
-

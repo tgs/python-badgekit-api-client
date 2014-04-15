@@ -12,8 +12,9 @@ class BadgeKitAPI(object):
         self.auth = jwt_auth.JWTAuth(secret, payload=jwt_payload)
 
     def ping(self):
-        return requests.get(urljoin(self.baseurl, '/'), auth=self.auth)
-
+        "Tests the server's availability"
+        resp = requests.get(urljoin(self.baseurl, '/'), auth=self.auth)
+        return resp.status_code == 200
 
     def list(self, kind, context):
-        pass
+        raise NotImplemented()
