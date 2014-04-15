@@ -24,7 +24,7 @@ class ContainerQuery(BadgeKitQuery):
         "Return a new query, with a replaced Program"
         return ContainerQuery(self._system, self._issuer, program)
 
-    def url(self):
+    def path(self):
         parts = []
         parts.extend(['systems', self._system])
         if self._issuer is not None:
