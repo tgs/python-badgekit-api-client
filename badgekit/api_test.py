@@ -45,22 +45,21 @@ class BKAPITest(unittest.TestCase):
         httpretty.register_uri(httpretty.GET, 'http://example.com/systems/badgekit/badges',
                 body=json.dumps(ret_structure))
 
-        container = api.Container('badgekit')
-        badges = a.list('badge', container)
+        badges = a.list('badge', system='badgekit')
         self.assertEqual(badges, ret_structure[u'badges'])
 
 
-class ContainterTest(unittest.TestCase):
+class PathTest(unittest.TestCase):
     def test_system_path(self):
-        c = api.Container('mysystem', None, None)
-        self.assertEqual(c._as_path(), 'systems/mysystem')
+        c = dict(system='mysystem')
+        self.assertEqual(api._make_path(**c), 'systems/mysystem')
 
     def test_issuer_path(self):
-        c = api.Container('sys', 'iss')
-        self.assertEqual(c._as_path(), 'systems/sys/issuers/iss')
+        c = dict(system='sys', issuer='iss')
+        self.assertEqual(api._make_path(**c), 'systems/sys/issuers/iss')
 
     def test_extra_bits(self):
-        c = api.Container('sass')
+        c = dict(system='sass')
         self.assertEqual(
-                c._as_path('badges'),
+                api._make_path('badges', **c),
                 'systems/sass/badges')

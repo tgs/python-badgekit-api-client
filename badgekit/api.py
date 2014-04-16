@@ -23,31 +23,43 @@ def raise_error(resp_obj):
 
     raise exc_type(resp_obj['message'])
 
-class Container(collections.namedtuple('Container', 'system, issuer, program, badge')):
-    """
-    Represents a path to something in the API that can contain other things.
 
-    This actually includes badges, not just 'containers' - a rename should happen.  TODO
-    """
-    def __new__(typ, *args):
-        # Fill in unspecified fields with None
-        args += (None,) * (len(typ._fields) - len(args))
-        return super(Container, typ).__new__(typ, *args)
+# Code to construct paths in the BadgeKit API
+_path_order = (
+        'system',
+        'issuer',
+        'program',
+        'badge',
+        'instance',
+        'application',
+        'evidence',
+        'comment',
+        'code',
+        )
 
-    def _as_path(self, *extras):
-        '''
-        Constructs URL paths such as 'systems/{system}/issuers/{issuer}.
-        '''
-        if not self.system:
-            raise ValueError('Container requires at least a System')
-        parts = []
-        for field in self._fields:
-            value = getattr(self, field)
-            if not value:
-                continue
-            parts.extend([field + 's', value])
 
-        return posixpath.join(*(parts + list(extras)))
+def _api_plural(noun):
+    if noun != 'evidence':
+        return noun + 's'
+    else:
+        return 'evidence'
+
+
+def _make_path(*args, **kwargs):
+    '''
+    Constructs URL paths such as 'systems/{system}/issuers/{issuer}.
+    '''
+    parts = []
+    for field in _path_order:
+        value = kwargs.get(field)
+        if not value:
+            continue
+        parts.extend([_api_plural(field), value])
+
+    if args:
+        parts.extend(args)
+
+    return posixpath.join(*parts)
 
 
 class BadgeKitAPI(object):
@@ -65,10 +77,10 @@ class BadgeKitAPI(object):
         resp_dict = json.loads(resp.text)
         return resp.status_code == 200 and resp_dict['app'] == 'BadgeKit API'
 
-    def list(self, kind, container):
+    def list(self, kind, **kwargs):
         "Lists objects of some kind in a container"
-        kind_plural = kind + u's'
-        path = container._as_path(kind_plural)
+        kind_plural = _api_plural(kind)
+        path = _make_path(kind_plural, **kwargs)
         resp = requests.get(urljoin(self.baseurl, path), auth=self.auth)
         resp_obj = json.loads(resp.text)
         if resp.status_code != 200:
