@@ -63,6 +63,31 @@ def _make_path(*args, **kwargs):
 
 
 class BadgeKitAPI(object):
+    """
+    A low-level interface to the BadgeKit API.
+
+    This API object provides the ability to list, get, add, modify, etc., the
+    objects in the BadgeKit REST API.  The goal is to abstract away as much of
+    the network communication as possible, while not including a lot of
+    special data about the structure of the API methods.  So, you will still
+    need to know which methods can be called on which API endpoints, etc.
+
+    At this point, such a list exists here:
+    https://github.com/mozilla/badgekit-api/blob/update-docs/docs/api-endpoints.md
+
+    As an example of translating between that list and this client, the list
+    says you can
+
+        GET /systems/:slug/issuers/:slug/programs/:slug/badges/:slug/applications
+
+    With this client, you could say the following to hit that endpoint:
+
+        api.list('application', system=sys, issuer=iss, program=prog, badge=badge)
+
+    Notice that all the parameters are singular forms of the nouns.  The order
+    of the method parameters does not matter, they are pulled into order when the
+    URL is constructed.
+    """
     def __init__(self, baseurl, secret, key='master'):
         self.baseurl = baseurl
 
@@ -118,3 +143,15 @@ class BadgeKitAPI(object):
         else:
             # ???
             return resp_obj
+
+    def create(self, data, **kwargs):
+        "Create an object"
+        raise NotImplementedError()
+
+    def update(self, data, **kwargs):
+        "Update an object"
+        raise NotImplementedError()
+
+    def delete(self, **kwargs):
+        "Delete an object"
+        raise NotImplementedError()
