@@ -5,6 +5,24 @@ from urlparse import urljoin
 import json
 import collections
 
+# Exceptions corresponding to errors the API can return
+class MethodNotAllowedError(ValueError): pass
+class ResourceNotFound(ValueError): pass
+
+errors = {
+        'MethodNotAllowedError': MethodNotAllowedError,
+        'ResourceNotFound': ResourceNotFound,
+        }
+
+def raise_error(resp_obj):
+    try:
+        exc_type = errors[resp_obj['code']]
+        resp_obj['message']
+    except:
+        raise TypeError(str(resp_obj))
+
+    raise exc_type(resp_obj['message'])
+
 class Container(collections.namedtuple('Container', 'system, issuer, program, badge')):
     """
     Represents a path to something in the API that can contain other things.
@@ -53,4 +71,6 @@ class BadgeKitAPI(object):
         path = container._as_path(kind_plural)
         resp = requests.get(urljoin(self.baseurl, path), auth=self.auth)
         resp_obj = json.loads(resp.text)
+        if resp.status_code != 200:
+            raise_error(resp_obj)
         return resp_obj[kind_plural]
