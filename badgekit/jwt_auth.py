@@ -12,31 +12,29 @@ def to_jwt(claim, algo, key):
         jws.sign(header, claim, key),
     ])
 
-def exp_after(secs):
-    return lambda req: str(int(time.time() + secs))
-
 payload_method = lambda req: req.method
 payload_path = lambda req: req.path_url
 
-def default_payload():
-    return {
-        'method': payload_method,
-        'path': payload_path,
-        }
-
 class JWTAuth(AuthBase):
-    def __init__(self, secret, payload=default_payload(), alg='HS256'):
+    def __init__(self, secret, alg='HS256'):
         """
         Create a client object that will sign requests with JSON Web Tokens.
         """
         # TODO add exp (expire)
         self.secret = secret
         self.alg = alg
-        self.payload_generators = payload
+        self._generators = {}
 
-    def __call__(self, request):
+    def add_field(self, name, generator):
+        self._generators[name] = generator
+
+    def expire(self, secs):
+        self.add_field('exp',
+                lambda req: str(int(time.time() + secs)))
+
+    def generate(self, request):
         payload = {}
-        for field, gen in self.payload_generators.iteritems():
+        for field, gen in self._generators.iteritems():
             value = None
             if callable(gen):
                 value = gen(request)
@@ -45,8 +43,11 @@ class JWTAuth(AuthBase):
 
             if value:
                 payload[field] = value
+        return payload
+
+    def __call__(self, request):
+        payload = self.generate(request)
         token = to_jwt(payload, self.alg, self.secret)
     
         request.headers['Authorization'] = 'JWT token="%s"' % token
         return request
-

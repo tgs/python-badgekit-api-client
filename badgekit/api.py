@@ -91,10 +91,12 @@ class BadgeKitAPI(object):
     def __init__(self, baseurl, secret, key='master'):
         self.baseurl = baseurl
 
-        jwt_payload = jwt_auth.default_payload()
-        jwt_payload['key'] = key
-        jwt_payload['exp'] = jwt_auth.exp_after(30)
-        self.auth = jwt_auth.JWTAuth(secret, payload=jwt_payload)
+        auth = jwt_auth.JWTAuth(secret)
+        auth.add_field('key', key)
+        auth.expire(30)
+        auth.add_field('path', jwt_auth.payload_path)
+        auth.add_field('method', jwt_auth.payload_method)
+        self.auth = auth
 
     def ping(self):
         "Tests the server's availability"

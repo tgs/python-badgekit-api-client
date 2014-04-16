@@ -19,7 +19,9 @@ class BKAPITest(unittest.TestCase):
 
         secret = 's3cr3tz'
 
-        auth = jwt_auth.JWTAuth(secret, payload=jwt_auth.default_payload())
+        auth = jwt_auth.JWTAuth(secret)
+        auth.add_field('path', jwt_auth.payload_path)
+        auth.add_field('method', jwt_auth.payload_method)
         resp = requests.get('http://example.com/', auth=auth)
         self.assert_(resp)
 
