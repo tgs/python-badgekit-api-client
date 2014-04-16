@@ -36,8 +36,7 @@ class BKAPITest(unittest.TestCase):
 
     @httpretty.activate
     def test_list(self):
-        secret = 'asdf'
-        a = api.BadgeKitAPI('http://example.com', secret)
+        a = api.BadgeKitAPI('http://example.com', 'asdf')
 
         ret_structure = {
                 u'badges': [u'real data goes here'],

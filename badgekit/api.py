@@ -78,7 +78,16 @@ class BadgeKitAPI(object):
         return resp.status_code == 200 and resp_dict['app'] == 'BadgeKit API'
 
     def list(self, kind, **kwargs):
-        "Lists objects of some kind in a container"
+        """
+        Lists objects present in some container or badge.
+
+        >>> bk.list('badge', system='mysystem')
+        [ ... ]
+
+        The first argument is the kind of object that you would like to list.
+        All other arguments should be keywords specifying the location of that
+        object, for instance the system, issuer, and program.
+        """
         kind_plural = _api_plural(kind)
         path = _make_path(kind_plural, **kwargs)
         resp = requests.get(urljoin(self.baseurl, path), auth=self.auth)
