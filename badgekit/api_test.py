@@ -48,6 +48,20 @@ class BKAPITest(unittest.TestCase):
         badges = a.list('badge', system='badgekit')
         self.assertEqual(badges, ret_structure[u'badges'])
 
+    @httpretty.activate
+    def test_get(self):
+        a = api.BadgeKitAPI('http://example.com/', 'asdf')
+
+        slug = u'the-machine'
+        ret_structure = { u'system':
+                { u'email': None, u'id': 1, u'imageUrl': None, u'slug': slug },
+                }
+        httpretty.register_uri(httpretty.GET, 'http://example.com/systems/the-machine',
+                body=json.dumps(ret_structure))
+
+        system = a.get(system=slug)
+        self.assertEqual(system, ret_structure[u'system'])
+
 
 class PathTest(unittest.TestCase):
     def test_system_path(self):

@@ -86,3 +86,26 @@ class BadgeKitAPI(object):
         if resp.status_code != 200:
             raise_error(resp_obj)
         return resp_obj[kind_plural]
+
+    def get(self, **kwargs):
+        """
+        Retrieves some object from the API.
+
+        >>> bk.get(system='mysystem', badge='stupendous-badge')
+        { ... }
+
+        The arguments should all be keywords, specifying the location of
+        the object.
+        """
+        path = _make_path(**kwargs)
+        resp = requests.get(urljoin(self.baseurl, path), auth=self.auth)
+        resp_obj = json.loads(resp.text)
+        if resp.status_code != 200:
+            raise_error(resp_obj)
+
+        keys = resp_obj.keys()
+        if len(keys) == 1:
+            return resp_obj[keys[0]]
+        else:
+            # ???
+            return resp_obj
