@@ -14,7 +14,7 @@ class BKAPITest(unittest.TestCase):
     @httpretty.activate
     def test_ping(self):
         httpretty.register_uri(httpretty.GET, 'http://example.com/',
-                body='')
+                body='{"app": "BadgeKit API"}')
 
         a = api.BadgeKitAPI('http://example.com', 's3cr3t')
         a.ping()
@@ -24,7 +24,7 @@ class BKAPITest(unittest.TestCase):
     @httpretty.activate
     def test_auth(self):
         httpretty.register_uri(httpretty.GET, 'http://example.com/',
-                body='')
+                body='{"app": "BadgeKit API"}')
 
         a = api.BadgeKitAPI('http://example.com', 's3cr3t')
         self.assert_(a.ping())

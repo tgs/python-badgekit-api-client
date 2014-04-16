@@ -1,6 +1,7 @@
 import requests
 import jwt_auth
 from urlparse import urljoin
+import json
 
 class BadgeKitAPI(object):
     def __init__(self, baseurl, secret, key='master'):
@@ -14,7 +15,8 @@ class BadgeKitAPI(object):
     def ping(self):
         "Tests the server's availability"
         resp = requests.get(urljoin(self.baseurl, '/'), auth=self.auth)
-        return resp.status_code == 200
+        resp_dict = json.loads(resp.text)
+        return resp.status_code == 200 and resp_dict['app'] == 'BadgeKit API'
 
     def list(self, kind, context):
         raise NotImplemented()
