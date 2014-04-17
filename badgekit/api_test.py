@@ -1,4 +1,5 @@
 import httpretty
+import re
 import unittest
 import api
 import jws
@@ -41,11 +42,15 @@ class BKAPITest(unittest.TestCase):
         ret_structure = {
                 u'badges': [u'real data goes here'],
                 }
-        httpretty.register_uri(httpretty.GET, 'http://example.com/systems/badgekit/badges',
+        httpretty.register_uri(httpretty.GET,
+                re.compile('example.com/.*'),
                 body=json.dumps(ret_structure))
 
         badges = a.list('badge', system='badgekit')
         self.assertEqual(badges, ret_structure[u'badges'])
+
+        req = httpretty.last_request()
+        self.assertEqual(req.path, '/systems/badgekit/badges')
 
     @httpretty.activate
     def test_get(self):
@@ -55,11 +60,15 @@ class BKAPITest(unittest.TestCase):
         ret_structure = { u'system':
                 { u'email': None, u'id': 1, u'imageUrl': None, u'slug': slug },
                 }
-        httpretty.register_uri(httpretty.GET, 'http://example.com/systems/the-machine',
+        httpretty.register_uri(httpretty.GET,
+                re.compile('example.com/.*'),
                 body=json.dumps(ret_structure))
 
         system = a.get(system=slug)
         self.assertEqual(system, ret_structure[u'system'])
+
+        req = httpretty.last_request()
+        self.assertEqual(req.path, '/systems/the-machine')
 
 
 class PathTest(unittest.TestCase):
