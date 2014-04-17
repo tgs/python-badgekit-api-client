@@ -54,3 +54,23 @@ class BKAPITest(unittest.TestCase):
 
         self.assertEqual(claim['body']['hash'],
                 hashlib.sha256(req.body).hexdigest())
+
+    @httpretty.activate
+    def test_query(self):
+        "Make sure query strings are included in the 'path' claim"
+        httpretty.register_uri(httpretty.GET, 'http://example.com/',
+                body='[]')
+        secret = 's33333krit'
+
+        auth = jwt_auth.JWTAuth(secret)
+        auth.add_field('path', jwt_auth.payload_path)
+        resp = requests.get('http://example.com/',
+                params={'Hope this': 'Is signed'},
+                auth=auth)
+
+        req = httpretty.last_request()
+        auth_hdr = req.headers['Authorization']
+        token = auth_hdr[auth_hdr.find('"'):].strip('"')
+        claim = from_jwt(token, secret)
+
+        self.assertEqual(claim['path'], '/?Hope+this=Is+signed')
