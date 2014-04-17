@@ -107,3 +107,21 @@ class PathTest(unittest.TestCase):
         self.assertEqual(
                 api._make_path('badges', system='jkl', archived=True),
                 'systems/jkl/badges?archived=true')
+
+
+class ExceptionTest(unittest.TestCase):
+    def test_known_str(self):
+        response = {
+                "code": "ResourceConflict",
+                "message": "system with that `slug` already exists",
+                "details": {
+                    "slug": "system-slug",
+                    "name": "System Name",
+                    "url": "https://example.org/system/",
+                    "email": "system-badges@example.org",
+                    "description": "System Description"
+                    }
+                }
+        e = api.ResourceConflict(response)
+        self.assertIn('ResourceConflict', str(e))
+        self.assertIn('already exists', str(e))

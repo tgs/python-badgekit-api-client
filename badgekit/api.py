@@ -38,7 +38,7 @@ def raise_error(resp_obj):
     except:
         raise BadgeKitException(resp_obj)
 
-    raise exc_type(resp_obj['message'])
+    raise exc_type(resp_obj)
 
 
 # Code to construct paths in the BadgeKit API
