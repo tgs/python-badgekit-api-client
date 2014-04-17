@@ -116,6 +116,17 @@ class BadgeKitAPI(object):
     URL is constructed.
     """
     def __init__(self, baseurl, secret, key='master'):
+        """
+        Returns a new BadgeKitAPI object.
+
+        :param baseurl: the URL of the badgekit-api server.
+        :param secret: the client secret.
+
+        For the moment, the secret is just the same secret that is used between
+        the two Node.js servers, badgekit-api and openbadges-badgekit.  Look
+        for it in the environment variables of the badgekit-api server - maybe
+        a file called `.env`.
+        """
         self.baseurl = baseurl
 
         auth = jwt_auth.JWTAuth(secret)

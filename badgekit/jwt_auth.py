@@ -36,10 +36,20 @@ class JWTAuth(AuthBase):
         resp = requests.get('http://example.com/', auth=auth)
 
     You can add fields to the signed payload using the expire() and add_field() methods.
+
+    This is a 'Custom Authentication' mechanism for Kenneth Reitz's Requests
+    library; see the example in the docs for some context:
+    http://docs.python-requests.org/en/latest/user/advanced/#custom-authentication
+
+    For more on JSON Web Tokens, see
+    http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html
     """
     def __init__(self, secret, alg='HS256'):
         """
-        Create a client object that will sign requests with JSON Web Tokens.
+        Create an object that will sign requests with JSON Web Tokens.
+
+        See the documentation of `python-jws` for the list of available
+        algorithms.
         """
         self.secret = secret
         self.alg = alg
@@ -53,9 +63,13 @@ class JWTAuth(AuthBase):
          - generator: a value or generator, the value of the field.
 
         If `generator` is callable, then each time a request is made with
-        this JWTAuth, the generator will be called with one argument: the
-        request.  For instance, here is field that will have your JWT
-        sign the path that it is requesting:
+        this JWTAuth, the generator will be called with one argument:
+        a `PreparedRequest` object.  See this page for a list of the
+        available properties:
+        http://docs.python-requests.org/en/latest/api/#requests.PreparedRequest
+
+        For instance, here is field that will have your JWT sign the path that
+        it is requesting:
 
             auth.add_field('path', lambda req: req.path_url)
 
@@ -78,7 +92,9 @@ class JWTAuth(AuthBase):
                 lambda req: str(int(time.time() + secs)))
 
     def _generate(self, request):
-        "Generate a payload for the given request."
+        """
+        Generate a payload for the given request.
+        """
         payload = {}
         for field, gen in self._generators.iteritems():
             value = None
@@ -92,7 +108,14 @@ class JWTAuth(AuthBase):
         return payload
 
     def __call__(self, request):
-        "Called by requests when a request is made."
+        """
+        Called by requests when a request is made.
+
+        The `request` parameter is a PreparedRequest object.
+
+        Prepares the payload using the field generators, and then
+        adds an `Authorization` header to the request.
+        """
         payload = self._generate(request)
         token = to_jwt(payload, self.alg, self.secret)
     
