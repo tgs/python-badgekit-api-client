@@ -76,3 +76,8 @@ class PathTest(unittest.TestCase):
         self.assertEqual(
                 api._make_path('badges', **c),
                 'systems/sass/badges')
+
+    def test_query(self):
+        self.assertEqual(
+                api._make_path('badges', system='jkl', archived=True),
+                'systems/jkl/badges?archived=true')

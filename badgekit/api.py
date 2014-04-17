@@ -1,4 +1,5 @@
 import requests
+import urllib
 import posixpath
 import jwt_auth
 from urlparse import urljoin
@@ -38,6 +39,14 @@ _path_order = (
         )
 
 
+# Possible query parameters.  As long as the list of possible
+# parameters is disjoint from the set of directory components
+# above, everything is easy :)
+_possible_query_params = (
+        'archived',
+        )
+
+
 def _api_plural(noun):
     if noun != 'evidence':
         return noun + 's'
@@ -52,14 +61,32 @@ def _make_path(*args, **kwargs):
     parts = []
     for field in _path_order:
         value = kwargs.get(field)
-        if not value:
+        if value is None:
             continue
         parts.extend([_api_plural(field), value])
 
     if args:
         parts.extend(args)
 
-    return posixpath.join(*parts)
+    path = posixpath.join(*parts)
+
+    # If the API ever supports duplicate parameters, we would need
+    # to change this to a defaultdict(list) or FieldStorage or similar.
+    params = {}
+    for param in _possible_query_params:
+        value = kwargs.get(param)
+        if value is None:
+            continue
+        elif value is True:
+            value = 'true'
+        elif value is False:
+            value = 'false'
+        params[param] = value
+
+    if params:
+        path = '%s?%s' % (path,
+                urllib.urlencode(params))
+    return path
 
 
 class BadgeKitAPI(object):
