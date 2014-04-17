@@ -197,9 +197,18 @@ class BadgeKitAPI(object):
 
         return resp_obj
 
-    def create(self, data, **kwargs):
+    def create(self, kind, data, **kwargs):
         "Create an object"
-        raise NotImplementedError()
+        path = _make_path(_api_plural(kind), **kwargs)
+        resp = requests.post(urljoin(self.baseurl, path),
+                data=data,
+                auth=self.auth)
+        resp_obj = json.loads(resp.text)
+
+        if resp.status_code != 201:
+            raise_error(resp_obj)
+
+        return resp_obj
 
     def update(self, data, **kwargs):
         "Update an object"

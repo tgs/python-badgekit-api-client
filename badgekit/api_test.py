@@ -70,6 +70,23 @@ class BKAPITest(unittest.TestCase):
         req = httpretty.last_request()
         self.assertEqual(req.path, '/systems/the-machine')
 
+    @httpretty.activate
+    def test_create(self):
+        a = api.BadgeKitAPI('http://example.com/', 'asdf')
+
+        slug = u'test-sys'
+        httpretty.register_uri(httpretty.POST,
+                re.compile('example.com/.*'),
+                body='{}', status=201)
+
+        result = a.create(
+                'system',
+                dict(slug=slug, name='Test System FTW',
+                    url='http://example.com/testz'))
+
+        req = httpretty.last_request()
+        self.assertEqual(req.path, '/systems')
+
 
 class PathTest(unittest.TestCase):
     def test_system_path(self):
