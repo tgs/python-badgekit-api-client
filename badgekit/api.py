@@ -96,6 +96,7 @@ class BadgeKitAPI(object):
         auth.expire(30)
         auth.add_field('path', jwt_auth.payload_path)
         auth.add_field('method', jwt_auth.payload_method)
+        auth.add_field('body', jwt_auth.payload_body)
         self.auth = auth
 
     def ping(self):
