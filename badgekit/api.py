@@ -6,13 +6,29 @@ from urlparse import urljoin
 import json
 import collections
 
-# Exceptions corresponding to errors the API can return
-class MethodNotAllowedError(ValueError): pass
-class ResourceNotFound(ValueError): pass
+
+class BadgeKitException(Exception):
+    def __init__(self, resp_obj):
+        self.info = resp_obj
+
+    def __str__(self):
+        return ": ".join(str(x) for x in [self.__class__.__name__,
+            self.info.get('code'), self.info.get('message')])
+
+
+class APIError(BadgeKitException):
+    "Thrown for unexpected problems, maybe problems in this library"
+
+class ResourceNotFound(BadgeKitException):
+    "Thrown for HTTP 404 when it is meaningful for the API"
+
+class ResourceConflict(BadgeKitException):
+    "Thrown when POSTing an item that already exists"
+
 
 errors = {
-        'MethodNotAllowedError': MethodNotAllowedError,
         'ResourceNotFound': ResourceNotFound,
+        'ResourceConflict': ResourceConflict,
         }
 
 def raise_error(resp_obj):
@@ -20,7 +36,7 @@ def raise_error(resp_obj):
         exc_type = errors[resp_obj['code']]
         resp_obj['message']
     except:
-        raise TypeError(str(resp_obj))
+        raise BadgeKitException(resp_obj)
 
     raise exc_type(resp_obj['message'])
 
