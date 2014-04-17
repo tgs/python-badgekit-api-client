@@ -47,7 +47,7 @@ class BKAPITest(unittest.TestCase):
                 body=json.dumps(ret_structure))
 
         badges = a.list('badge', system='badgekit')
-        self.assertEqual(badges, ret_structure[u'badges'])
+        self.assertEqual(badges, ret_structure)
 
         req = httpretty.last_request()
         self.assertEqual(req.path, '/systems/badgekit/badges')
@@ -64,8 +64,8 @@ class BKAPITest(unittest.TestCase):
                 re.compile('example.com/.*'),
                 body=json.dumps(ret_structure))
 
-        system = a.get(system=slug)
-        self.assertEqual(system, ret_structure[u'system'])
+        resp = a.get(system=slug)
+        self.assertEqual(resp['system'], ret_structure[u'system'])
 
         req = httpretty.last_request()
         self.assertEqual(req.path, '/systems/the-machine')
