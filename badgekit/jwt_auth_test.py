@@ -1,4 +1,5 @@
 import httpretty
+import hashlib
 import requests
 import jwt_auth
 import jws
@@ -33,3 +34,23 @@ class BKAPITest(unittest.TestCase):
         token = auth_hdr[auth_hdr.find('"'):].strip('"')
         # Throws an exception on failure to verify
         claim = from_jwt(token, secret)
+
+    @httpretty.activate
+    def test_body(self):
+        httpretty.register_uri(httpretty.POST, 'http://example.com/',
+                body='[]')
+        secret = 's33333krit'
+
+        auth = jwt_auth.JWTAuth(secret)
+        auth.add_field('body', jwt_auth.payload_body)
+        resp = requests.post('http://example.com/',
+                data={'Hope this': 'Is encoded'},
+                auth=auth)
+
+        req = httpretty.last_request()
+        auth_hdr = req.headers['Authorization']
+        token = auth_hdr[auth_hdr.find('"'):].strip('"')
+        claim = from_jwt(token, secret)
+
+        self.assertEqual(claim['body']['hash'],
+                hashlib.sha256(req.body).hexdigest())

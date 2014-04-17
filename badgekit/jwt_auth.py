@@ -1,4 +1,5 @@
 import requests
+import hashlib
 from requests.auth import AuthBase
 import time
 import jws
@@ -12,8 +13,18 @@ def to_jwt(claim, algo, key):
         jws.sign(header, claim, key),
     ])
 
+
 payload_method = lambda req: req.method
 payload_path = lambda req: req.path_url
+
+
+def payload_body(req):
+    if req.method in ('POST', 'PUT'):
+        return {
+                'hash': hashlib.sha256(req.body).hexdigest(),
+                'alg': 'sha256',
+                }
+
 
 class JWTAuth(AuthBase):
     """
