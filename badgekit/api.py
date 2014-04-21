@@ -8,12 +8,19 @@ import collections
 
 
 class BadgeKitException(Exception):
-    def __init__(self, resp_obj):
+    def __init__(self, resp_obj, request):
         self.info = resp_obj
+        self.request = request
 
     def __str__(self):
-        return ": ".join(str(x) for x in [self.__class__.__name__,
-            self.info.get('code'), self.info.get('message')])
+        return "{class}: {method} {url} returned {code}: {message}".format(
+                **{
+                    'class': type(self).__name__,
+                    'method': self.request.method,
+                    'url': self.request.url,
+                    'code': self.info.get('code'),
+                    'message': self.info.get('message'),
+                })
 
 
 class APIError(BadgeKitException):
@@ -31,14 +38,14 @@ errors = {
         'ResourceConflict': ResourceConflict,
         }
 
-def raise_error(resp_obj):
+def raise_error(resp_obj, request):
     try:
         exc_type = errors[resp_obj['code']]
         resp_obj['message']
     except:
-        raise BadgeKitException(resp_obj)
+        raise BadgeKitException(resp_obj, request)
 
-    raise exc_type(resp_obj)
+    raise exc_type(resp_obj, request)
 
 
 # Code to construct paths in the BadgeKit API
@@ -154,10 +161,14 @@ class BadgeKitAPI(object):
         self.auth = auth
 
     def ping(self):
-        "Tests the server's availability"
-        resp = requests.get(urljoin(self.baseurl, '/'), auth=self.auth)
-        resp_dict = json.loads(resp.text)
-        return resp.status_code == 200 and resp_dict['app'] == 'BadgeKit API'
+        """Tests the server's availability - returns True if
+        server is available, False otherwise."""
+        try:
+            resp = requests.get(urljoin(self.baseurl, '/'), auth=self.auth)
+            resp_dict = json.loads(resp.text)
+            return resp.status_code == 200 and resp_dict['app'] == 'BadgeKit API'
+        except requests.ConnectionError:
+            return False
 
     def list(self, kind, **kwargs):
         """
@@ -175,7 +186,7 @@ class BadgeKitAPI(object):
         resp = requests.get(urljoin(self.baseurl, path), auth=self.auth)
         resp_obj = json.loads(resp.text)
         if resp.status_code != 200:
-            raise_error(resp_obj)
+            raise_error(resp_obj, resp.request)
         return resp_obj
 
     def get(self, **kwargs):
@@ -193,7 +204,7 @@ class BadgeKitAPI(object):
         resp_obj = json.loads(resp.text)
 
         if resp.status_code != 200:
-            raise_error(resp_obj)
+            raise_error(resp_obj, resp.request)
 
         return resp_obj
 
@@ -206,7 +217,7 @@ class BadgeKitAPI(object):
         resp_obj = json.loads(resp.text)
 
         if resp.status_code != 201:
-            raise_error(resp_obj)
+            raise_error(resp_obj, resp.request)
 
         return resp_obj
 
