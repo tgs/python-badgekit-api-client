@@ -31,8 +31,8 @@ class BKAPITest(unittest.TestCase):
         # Throws an exception on failure to verify
         claim = from_jwt(token, 's3cr3t')
 
-        self.assertIn('key', claim)
-        self.assertIn('exp', claim)
+        self.assert_('key' in claim)
+        self.assert_('exp' in claim)
         self.assertEqual(claim['path'], '/')
         self.assertEqual(claim['method'], 'GET')
 
@@ -125,5 +125,5 @@ class ExceptionTest(unittest.TestCase):
                     }
                 }
         e = api.ResourceConflict(response, req)
-        self.assertIn('ResourceConflict', str(e))
-        self.assertIn('already exists', str(e))
+        self.assert_('ResourceConflict' in str(e))
+        self.assert_('already exists' in str(e))
