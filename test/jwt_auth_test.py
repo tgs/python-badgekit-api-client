@@ -1,7 +1,7 @@
 import httpretty
 import hashlib
 import requests
-import jwt_auth
+from badgekit import jwt_auth
 import jws
 import unittest
 

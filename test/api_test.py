@@ -1,7 +1,8 @@
 import httpretty
+import requests
 import re
 import unittest
-import api
+from badgekit import api
 import jws
 import json
 
@@ -111,6 +112,7 @@ class PathTest(unittest.TestCase):
 
 class ExceptionTest(unittest.TestCase):
     def test_known_str(self):
+        req = requests.Request("POST", "http://example.org/system/")
         response = {
                 "code": "ResourceConflict",
                 "message": "system with that `slug` already exists",
@@ -122,6 +124,6 @@ class ExceptionTest(unittest.TestCase):
                     "description": "System Description"
                     }
                 }
-        e = api.ResourceConflict(response)
+        e = api.ResourceConflict(response, req)
         self.assertIn('ResourceConflict', str(e))
         self.assertIn('already exists', str(e))
