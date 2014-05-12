@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import httpretty
 import requests
 import re
@@ -35,7 +36,7 @@ class BKAPITest(unittest.TestCase):
         a = api.BadgeKitAPI('http://example.com', 'asdf')
 
         ret_structure = {
-                u'badges': [u'real data goes here'],
+                'badges': ['real data goes here'],
                 }
         httpretty.register_uri(httpretty.GET,
                 re.compile('example.com/.*'),
@@ -51,16 +52,16 @@ class BKAPITest(unittest.TestCase):
     def test_get(self):
         a = api.BadgeKitAPI('http://example.com/', 'asdf')
 
-        slug = u'the-machine'
-        ret_structure = { u'system':
-                { u'email': None, u'id': 1, u'imageUrl': None, u'slug': slug },
+        slug = 'the-machine'
+        ret_structure = { 'system':
+                { 'email': None, 'id': 1, 'imageUrl': None, 'slug': slug },
                 }
         httpretty.register_uri(httpretty.GET,
                 re.compile('example.com/.*'),
                 body=json.dumps(ret_structure))
 
         resp = a.get(system=slug)
-        self.assertEqual(resp['system'], ret_structure[u'system'])
+        self.assertEqual(resp['system'], ret_structure['system'])
 
         req = httpretty.last_request()
         self.assertEqual(req.path, '/systems/the-machine')
@@ -69,7 +70,7 @@ class BKAPITest(unittest.TestCase):
     def test_create(self):
         a = api.BadgeKitAPI('http://example.com/', 'asdf')
 
-        slug = u'test-sys'
+        slug = 'test-sys'
         httpretty.register_uri(httpretty.POST,
                 re.compile('example.com/.*'),
                 body='{}', status=201)
