@@ -3,9 +3,8 @@ language: python
 python:
   - 2.6
   - 2.7
-    # will add these once python-jws supports python 3
-    #- 3.2
-    #- 3.3
+  - 3.2
+  - 3.3
 
 install:
   - pip install coverage coveralls --use-mirrors

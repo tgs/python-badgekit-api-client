@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import requests
 import hashlib
 from requests.auth import AuthBase
@@ -11,8 +12,9 @@ payload_path = lambda req: req.path_url
 
 def payload_body(req):
     if req.method in ('POST', 'PUT'):
+        #import pdb; pdb.set_trace()
         return {
-                'hash': hashlib.sha256(req.body).hexdigest(),
+                'hash': hashlib.sha256(req.body.encode('utf-8')).hexdigest(),
                 'alg': 'sha256',
                 }
 
@@ -80,14 +82,14 @@ class JWTAuth(AuthBase):
         and interprets this field.
         """
         self.add_field('exp',
-                lambda req: str(int(time.time() + secs)))
+                lambda req: int(time.time() + secs))
 
     def _generate(self, request):
         """
         Generate a payload for the given request.
         """
         payload = {}
-        for field, gen in self._generators.iteritems():
+        for field, gen in self._generators.items():
             value = None
             if callable(gen):
                 value = gen(request)
@@ -108,7 +110,8 @@ class JWTAuth(AuthBase):
         adds an `Authorization` header to the request.
         """
         payload = self._generate(request)
+        #import pdb; pdb.set_trace()
         token = jwt.encode(payload, self.secret, self.alg)
     
-        request.headers['Authorization'] = 'JWT token="%s"' % token
+        request.headers['Authorization'] = 'JWT token="%s"' % token.decode('ascii')
         return request

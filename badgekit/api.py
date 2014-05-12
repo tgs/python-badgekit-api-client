@@ -1,8 +1,11 @@
 import requests
-import urllib
 import posixpath
-import jwt_auth
-from urlparse import urljoin
+from . import jwt_auth
+try:
+    from urlparse import urljoin
+    from urllib import urlencode
+except ImportError:
+    from urllib.parse import urljoin, urlencode
 import json
 import collections
 
@@ -108,7 +111,7 @@ def _make_path(*args, **kwargs):
 
     if params:
         path = '%s?%s' % (path,
-                urllib.urlencode(params))
+                urlencode(params))
     return path
 
 
