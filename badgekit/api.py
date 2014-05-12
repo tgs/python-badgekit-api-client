@@ -71,10 +71,10 @@ _possible_query_params = (
 
 
 def _api_plural(noun):
-    if noun != 'evidence':
+    if noun not in ['evidence', 'claim', 'codes/random']:
         return noun + 's'
     else:
-        return 'evidence'
+        return noun
 
 
 def _make_path(*args, **kwargs):
