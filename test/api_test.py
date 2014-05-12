@@ -3,15 +3,9 @@ import requests
 import re
 import unittest
 from badgekit import api
-import jws
+import jwt
 import json
 
-def from_jwt(jwt, key):
-    (b64_header, b64_claim, b64_sig) = jwt.split('.')
-    (header, claim) = map(jws.utils.from_base64,
-            (b64_header, b64_claim))
-    jws.verify(header, claim, b64_sig, key, is_json=True)
-    return jws.utils.decode(b64_claim)
 
 class BKAPITest(unittest.TestCase):
     @httpretty.activate
@@ -29,7 +23,7 @@ class BKAPITest(unittest.TestCase):
         self.assert_('JWT token=' in auth_hdr)
         token = auth_hdr[auth_hdr.find('"'):].strip('"')
         # Throws an exception on failure to verify
-        claim = from_jwt(token, 's3cr3t')
+        claim = jwt.decode(token, 's3cr3t')
 
         self.assert_('key' in claim)
         self.assert_('exp' in claim)

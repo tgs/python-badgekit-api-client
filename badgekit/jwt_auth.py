@@ -2,16 +2,7 @@ import requests
 import hashlib
 from requests.auth import AuthBase
 import time
-import jws
-
-# From https://github.com/brianloveswords/python-jws/blob/master/examples/minijwt.py
-def to_jwt(claim, algo, key):
-    header = {'typ': 'JWT', 'alg': algo}
-    return '.'.join([
-        jws.utils.encode(header),
-        jws.utils.encode(claim),
-        jws.sign(header, claim, key),
-    ])
+import jwt
 
 
 payload_method = lambda req: req.method
@@ -48,7 +39,7 @@ class JWTAuth(AuthBase):
         """
         Create an object that will sign requests with JSON Web Tokens.
 
-        See the documentation of `python-jws` for the list of available
+        See the documentation of `PyJWT` for the list of available
         algorithms.
         """
         self.secret = secret
@@ -117,7 +108,7 @@ class JWTAuth(AuthBase):
         adds an `Authorization` header to the request.
         """
         payload = self._generate(request)
-        token = to_jwt(payload, self.alg, self.secret)
+        token = jwt.encode(payload, self.secret, self.alg)
     
         request.headers['Authorization'] = 'JWT token="%s"' % token
         return request
