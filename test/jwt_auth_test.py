@@ -19,13 +19,13 @@ class BKAPITest(unittest.TestCase):
         auth.add_field('path', jwt_auth.payload_path)
         auth.add_field('method', jwt_auth.payload_method)
         resp = requests.get('http://example.com/', auth=auth)
-        self.assert_(resp)
+        self.assertTrue(resp)
 
         req = httpretty.last_request()
-        self.assert_('Authorization' in req.headers, 'JWT Authorization present')
+        self.assertTrue('Authorization' in req.headers, 'JWT Authorization present')
 
         auth_hdr = req.headers['Authorization']
-        self.assert_('JWT token=' in auth_hdr)
+        self.assertTrue('JWT token=' in auth_hdr)
         token = auth_hdr[auth_hdr.find('"'):].strip('"')
         # Throws an exception on failure to verify
         claim = jwt.decode(token, secret)
