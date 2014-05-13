@@ -225,9 +225,9 @@ class BadgeKitAPI(object):
         return resp_obj
 
     def update(self, data, **kwargs):
-        "Update an object"
+        "Update an object - not implemented yet"
         raise NotImplementedError()
 
     def delete(self, **kwargs):
-        "Delete an object"
+        "Delete an object - not implemented yet"
         raise NotImplementedError()
