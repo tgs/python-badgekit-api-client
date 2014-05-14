@@ -8,10 +8,12 @@ except ImportError:
     from urllib.parse import urljoin, urlencode
 import json
 import collections
+from requests.exceptions import RequestException
 
 
 __all__ = [
         'BadgeKitException',
+        'RequestException',
         'APIError',
         'ResourceNotFound',
         'ResourceConflict',
