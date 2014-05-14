@@ -16,7 +16,7 @@ setup(
     description="Python client for Mozilla's BadgeKit API",
     name="badgekit-api-client",
     long_description=read("README.md"),
-    version=__import__("badgekit").__version__,
+    version=read("badgekit/version.py").split('=')[1].strip().strip('"'),
     # url="http://badgekit-api-client.rtfd.org/",
     license="MIT",
     packages=find_packages(),

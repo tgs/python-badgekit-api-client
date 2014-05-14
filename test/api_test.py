@@ -3,6 +3,7 @@ import httpretty
 import requests
 import re
 import unittest
+import badgekit
 from badgekit import api
 import jwt
 import json
@@ -14,7 +15,7 @@ class BKAPITest(unittest.TestCase):
         httpretty.register_uri(httpretty.GET, 'http://example.com/',
                 body='{"app": "BadgeKit API"}')
 
-        a = api.BadgeKitAPI('http://example.com', 's3cr3t')
+        a = badgekit.BadgeKitAPI('http://example.com', 's3cr3t')
         self.assertTrue(a.ping())
 
         req = httpretty.last_request()
@@ -33,7 +34,7 @@ class BKAPITest(unittest.TestCase):
 
     @httpretty.activate
     def test_list(self):
-        a = api.BadgeKitAPI('http://example.com', 'asdf')
+        a = badgekit.BadgeKitAPI('http://example.com', 'asdf')
 
         ret_structure = {
                 'badges': ['real data goes here'],
@@ -50,7 +51,7 @@ class BKAPITest(unittest.TestCase):
 
     @httpretty.activate
     def test_get(self):
-        a = api.BadgeKitAPI('http://example.com/', 'asdf')
+        a = badgekit.BadgeKitAPI('http://example.com/', 'asdf')
 
         slug = 'the-machine'
         ret_structure = { 'system':
@@ -68,7 +69,7 @@ class BKAPITest(unittest.TestCase):
 
     @httpretty.activate
     def test_create(self):
-        a = api.BadgeKitAPI('http://example.com/', 'asdf')
+        a = badgekit.BadgeKitAPI('http://example.com/', 'asdf')
 
         slug = 'test-sys'
         httpretty.register_uri(httpretty.POST,
@@ -119,6 +120,6 @@ class ExceptionTest(unittest.TestCase):
                     "description": "System Description"
                     }
                 }
-        e = api.ResourceConflict(response, req)
+        e = badgekit.ResourceConflict(response, req)
         self.assertTrue('ResourceConflict' in str(e))
         self.assertTrue('already exists' in str(e))

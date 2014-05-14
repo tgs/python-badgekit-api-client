@@ -10,6 +10,15 @@ import json
 import collections
 
 
+__all__ = [
+        'BadgeKitException',
+        'APIError',
+        'ResourceNotFound',
+        'ResourceConflict',
+        'BadgeKitAPI',
+        ]
+
+
 class BadgeKitException(Exception):
     def __init__(self, resp_obj, request):
         self.info = resp_obj
