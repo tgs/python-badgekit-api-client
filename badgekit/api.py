@@ -158,6 +158,7 @@ class BadgeKitAPI(object):
 
         :param baseurl: the URL of the badgekit-api server.
         :param secret: the client secret.
+        :param key: the name of the client secret, for the server to see.
 
         For the moment, the secret is just the same secret that is used between
         the two Node.js servers, badgekit-api and openbadges-badgekit.  Look
