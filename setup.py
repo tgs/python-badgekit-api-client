@@ -18,7 +18,7 @@ setup(
     long_description=read("README.md"),
     version=__import__("badgekit").__version__,
     # url="http://badgekit-api-client.rtfd.org/",
-    # license="MIT",
+    license="MIT",
     packages=find_packages(),
     install_requires=[
         'PyJWT',
@@ -30,15 +30,15 @@ setup(
         ],
     test_suite='test.suite',
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
-        #"Programming Language :: Python :: 2.6",
+        "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
-        #"Programming Language :: Python :: 3.2",
-        #"Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.2",
+        "Programming Language :: Python :: 3.3",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     zip_safe=False
