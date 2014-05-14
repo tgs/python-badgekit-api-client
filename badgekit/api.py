@@ -22,6 +22,12 @@ __all__ = [
 
 
 class BadgeKitException(Exception):
+    pass
+
+class APIError(BadgeKitException):
+    "Thrown for unexpected problems, maybe problems in this library"
+
+class CodedBadgeKitException(BadgeKitException):
     def __init__(self, resp_obj, request):
         self.info = resp_obj
         self.request = request
@@ -36,14 +42,10 @@ class BadgeKitException(Exception):
                     'message': self.info.get('message'),
                 })
 
-
-class APIError(BadgeKitException):
-    "Thrown for unexpected problems, maybe problems in this library"
-
-class ResourceNotFound(BadgeKitException):
+class ResourceNotFound(CodedBadgeKitException):
     "Thrown for HTTP 404 when it is meaningful for the API"
 
-class ResourceConflict(BadgeKitException):
+class ResourceConflict(CodedBadgeKitException):
     "Thrown when POSTing an item that already exists"
 
 
@@ -54,10 +56,16 @@ errors = {
 
 def raise_error(resp_obj, request):
     try:
+        # Find a specific exception for this code, if it exists
         exc_type = errors[resp_obj['code']]
+
+        # test that the response includes a 'message' and a 'code'
         resp_obj['message']
+        resp_obj['code']
     except:
-        raise BadgeKitException(resp_obj, request)
+        raise APIError(
+                "Problem with %s %s, and Badgekit-API didn't return a comprehensible error." \
+                        % (request.method, request.url))
 
     raise exc_type(resp_obj, request)
 
@@ -180,7 +188,7 @@ class BadgeKitAPI(object):
         server is available, False otherwise."""
         try:
             resp = requests.get(urljoin(self.baseurl, '/'), auth=self.auth)
-            resp_dict = json.loads(resp.text)
+            resp_dict = self._json_loads(resp.text)
             return resp.status_code == 200 and resp_dict['app'] == 'BadgeKit API'
         except requests.ConnectionError:
             return False
@@ -199,7 +207,7 @@ class BadgeKitAPI(object):
         kind_plural = _api_plural(kind)
         path = _make_path(kind_plural, **kwargs)
         resp = requests.get(urljoin(self.baseurl, path), auth=self.auth)
-        resp_obj = json.loads(resp.text)
+        resp_obj = self._json_loads(resp.text)
         if resp.status_code != 200:
             raise_error(resp_obj, resp.request)
         return resp_obj
@@ -216,7 +224,7 @@ class BadgeKitAPI(object):
         """
         path = _make_path(**kwargs)
         resp = requests.get(urljoin(self.baseurl, path), auth=self.auth)
-        resp_obj = json.loads(resp.text)
+        resp_obj = self._json_loads(resp.text)
 
         if resp.status_code != 200:
             raise_error(resp_obj, resp.request)
@@ -229,7 +237,7 @@ class BadgeKitAPI(object):
         resp = requests.post(urljoin(self.baseurl, path),
                 data=data,
                 auth=self.auth)
-        resp_obj = json.loads(resp.text)
+        resp_obj = self._json_loads(resp.text)
 
         if resp.status_code != 201:
             raise_error(resp_obj, resp.request)
@@ -243,3 +251,9 @@ class BadgeKitAPI(object):
     def delete(self, **kwargs):
         "Delete an object - not implemented yet"
         raise NotImplementedError()
+
+    def _json_loads(self, text):
+        try:
+            return json.loads(text)
+        except ValueError as e:
+            raise APIError("Invalid JSON in BadgeKit response")

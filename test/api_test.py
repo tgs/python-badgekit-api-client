@@ -123,3 +123,29 @@ class ExceptionTest(unittest.TestCase):
         e = badgekit.ResourceConflict(response, req)
         self.assertTrue('ResourceConflict' in str(e))
         self.assertTrue('already exists' in str(e))
+
+    def test_unknown_code(self):
+        req = requests.Request("POST", "http://example.org/systems/")
+        response = {
+                "there's no code field": "yup",
+                }
+
+        try:
+            api.raise_error(response, req)
+            self.fail("Exception should have been raised")
+        except badgekit.BadgeKitException as e:
+            self.assertTrue('example.org/systems' in '%s' % e)
+
+    @httpretty.activate
+    def test_invalid_json(self):
+        a = badgekit.BadgeKitAPI('http://example.com', 'asdf')
+
+        httpretty.register_uri(httpretty.GET,
+                re.compile('example.com/.*'),
+                body='{invalid json')
+
+        try:
+            badges = a.list('badge', system='badgekit')
+            self.fail("Exception should have been raised")
+        except badgekit.APIError as e:
+            self.assertTrue('json' in ('%s' % e).lower())
