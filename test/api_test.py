@@ -106,6 +106,37 @@ class PathTest(unittest.TestCase):
                 'systems/jkl/badges?archived=true')
 
 
+class ServerVersionTest(unittest.TestCase):
+    @httpretty.activate
+    def test_find_version(self):
+        a = badgekit.BadgeKitAPI('http://example.com', 'asdf')
+
+        httpretty.register_uri(httpretty.GET,
+                re.compile('example.com/.*'),
+                body='{"app":"BadgeKit API","version":"0.2.9"}')
+
+        resp = a.server_version()
+        self.assertEqual(resp, "0.2.9")
+
+
+    @httpretty.activate
+    def test_require_version(self):
+        a = badgekit.BadgeKitAPI('http://example.com', 'asdf')
+
+        httpretty.register_uri(httpretty.GET,
+                re.compile('example.com/.*'),
+                body='{"app":"BadgeKit API","version":"0.2.9"}')
+
+        try:
+            a.require_server_version("0.3.0")
+            self.fail("Should have thrown exception")
+        except ValueError:
+            pass
+
+        a.require_server_version("0.2")
+        a.require_server_version("0.2.2")
+
+
 class ExceptionTest(unittest.TestCase):
     def test_known_str(self):
         req = requests.Request("POST", "http://example.org/system/")

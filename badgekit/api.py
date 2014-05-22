@@ -1,6 +1,7 @@
 import requests
 import posixpath
 from . import jwt_auth
+from distutils.version import StrictVersion
 try:
     from urlparse import urljoin
     from urllib import urlencode
@@ -257,3 +258,19 @@ class BadgeKitAPI(object):
             return json.loads(text)
         except ValueError as e:
             raise APIError("Invalid JSON in BadgeKit response")
+
+    def server_version(self):
+        """Returns the server's reported version as a string."""
+        resp = requests.get(urljoin(self.baseurl, '/'), auth=self.auth)
+        resp_dict = self._json_loads(resp.text)
+        return resp_dict['version']
+
+    def require_server_version(self, required_version):
+        version = self.server_version()
+        server_url = self.baseurl
+        if StrictVersion(version) < StrictVersion(required_version):
+            raise ValueError(
+                    ("Version {required_version} or greater "
+                    + "of BadgeKit-API server required, but "
+                    + "{server_url} is only version {version}.")
+                    .format(**locals()))
