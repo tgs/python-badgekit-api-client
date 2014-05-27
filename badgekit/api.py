@@ -1,3 +1,35 @@
+"""
+A low-level interface to the BadgeKit API.
+
+The :class:`BadgeKitAPI` object provides the ability to list, get, add, modify,
+etc., the objects in the `BadgeKit REST API
+<https://github.com/mozilla/badgekit-api>`_.  The goal is to abstract away as
+much of the network communication as possible, while not including a lot of
+special data about the structure of the API methods.  So, you will still need
+to know which methods can be called on which API endpoints, etc.
+At this point, a list of those endpoints `exists here
+<https://github.com/mozilla/badgekit-api/blob/update-docs/docs/api-endpoints.md>`_.
+
+As an example of translating between that list and this client, the list
+says you can
+
+.. code-block:: http
+
+    GET /systems/:slug/issuers/:slug/programs/:slug/badges/:slug/applications HTTP/1.1
+
+With this client, you could say the following to hit that endpoint:
+
+.. code-block:: python
+
+    api.list('application', system=sys, issuer=iss, program=prog, badge=badge)
+
+Notice that all the parameters are singular forms of the nouns.  The order
+of the method parameters does not matter, they are pulled into order when the
+URL is constructed.
+
+Note that these classes are listed as being part of :mod:`badgekit.api`, but you
+can import them straight from :mod:`badgekit`.
+"""
 import requests
 import posixpath
 from . import jwt_auth
@@ -13,12 +45,12 @@ from requests.exceptions import RequestException
 
 
 __all__ = [
+        'BadgeKitAPI',
         'BadgeKitException',
         'RequestException',
         'APIError',
         'ResourceNotFound',
         'ResourceConflict',
-        'BadgeKitAPI',
         ]
 
 
@@ -26,7 +58,7 @@ class BadgeKitException(Exception):
     pass
 
 class APIError(BadgeKitException):
-    "Thrown for unexpected problems, maybe problems in this library"
+    "Thrown for unexpected problems, maybe problems in this library, or invalid JSON from the server."
 
 class CodedBadgeKitException(BadgeKitException):
     def __init__(self, resp_obj, request):
@@ -137,43 +169,18 @@ def _make_path(*args, **kwargs):
 
 class BadgeKitAPI(object):
     """
-    A low-level interface to the BadgeKit API.
+    A class representing an interface with the BadgeKit API server.
 
-    This API object provides the ability to list, get, add, modify, etc., the
-    objects in the BadgeKit REST API.  The goal is to abstract away as much of
-    the network communication as possible, while not including a lot of
-    special data about the structure of the API methods.  So, you will still
-    need to know which methods can be called on which API endpoints, etc.
+    :param baseurl: the URL of the badgekit-api server.
+    :param secret: the client secret.
+    :param key: the name of the client secret, for the server to see.
 
-    At this point, such a list exists here:
-    https://github.com/mozilla/badgekit-api/blob/update-docs/docs/api-endpoints.md
-
-    As an example of translating between that list and this client, the list
-    says you can
-
-        GET /systems/:slug/issuers/:slug/programs/:slug/badges/:slug/applications
-
-    With this client, you could say the following to hit that endpoint:
-
-        api.list('application', system=sys, issuer=iss, program=prog, badge=badge)
-
-    Notice that all the parameters are singular forms of the nouns.  The order
-    of the method parameters does not matter, they are pulled into order when the
-    URL is constructed.
+    For the moment, the secret is just the same secret that is used between
+    the two Node.js servers, badgekit-api and openbadges-badgekit.  Look
+    for it in the environment variables of the badgekit-api server - maybe
+    a file called `.env`.
     """
     def __init__(self, baseurl, secret, key='master'):
-        """
-        Returns a new BadgeKitAPI object.
-
-        :param baseurl: the URL of the badgekit-api server.
-        :param secret: the client secret.
-        :param key: the name of the client secret, for the server to see.
-
-        For the moment, the secret is just the same secret that is used between
-        the two Node.js servers, badgekit-api and openbadges-badgekit.  Look
-        for it in the environment variables of the badgekit-api server - maybe
-        a file called `.env`.
-        """
         self.baseurl = baseurl
 
         auth = jwt_auth.JWTAuth(secret)
@@ -198,12 +205,17 @@ class BadgeKitAPI(object):
         """
         Lists objects present in some container or badge.
 
+        :param kind: The 'kind' of object to list - for example, 'badge' or 'system'.
+
         >>> bk.list('badge', system='mysystem')
         [ ... ]
 
         The first argument is the kind of object that you would like to list.
         All other arguments should be keywords specifying the location of that
         object, for instance the system, issuer, and program.
+
+        Use this method to ``GET`` a URL that ends with the name of a 'kind' of object -
+        for example, the above code would hit ``/systems/mysystem/badges``.
         """
         kind_plural = _api_plural(kind)
         path = _make_path(kind_plural, **kwargs)
@@ -222,6 +234,10 @@ class BadgeKitAPI(object):
 
         The arguments should all be keywords, specifying the location of
         the object.
+
+        Use this method to ``GET`` a URL that ends with an identifier of an
+        object, and you just want to get that one object - for example, the
+        above code would hit ``/systems/mysystem/badges/stupendous-badge``.
         """
         path = _make_path(**kwargs)
         resp = requests.get(urljoin(self.baseurl, path), auth=self.auth)
@@ -233,7 +249,21 @@ class BadgeKitAPI(object):
         return resp_obj
 
     def create(self, kind, data, **kwargs):
-        "Create an object"
+        """
+        Create an object in the API.
+
+        :param kind: The kind of object to create - 'badge', 'issuer', 'instance', etc.
+        :param data: The data fields of the object, as a dict.
+
+        >>> bk.create('badge', {'name': 'Super', ...}, system='mysystem')
+        { ... }
+
+        The remaining keyword arguments specify the future location of the object.
+
+        Use this method to ``POST`` a URL that ends with a kind of object.
+        For instance, the above code would post to ``/systems/mysystem/badges`` with
+        ``data`` as the body of the request.
+        """
         path = _make_path(_api_plural(kind), **kwargs)
         resp = requests.post(urljoin(self.baseurl, path),
                 data=data,
@@ -266,6 +296,18 @@ class BadgeKitAPI(object):
         return resp_dict['version']
 
     def require_server_version(self, required_version):
+        """
+        Require a certain version of the BadgeKit API Server.
+
+        The BadgeKit-API server is under rapid development.  If you require
+        particular features, it makes sense to check the server version so that
+        you get "fail-early" behavior from your application.  This method
+        checks the supplied ``required_version`` against the server's
+        version, parses them with :class:`distutils.version.StrictVersion`, and
+        compares them.  If the server version is strictly less than
+        ``required_version``, a :class:`ValueError` is raised with an
+        informative error message.
+        """
         version = self.server_version()
         server_url = self.baseurl
         if StrictVersion(version) < StrictVersion(required_version):
