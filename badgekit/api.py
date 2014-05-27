@@ -7,7 +7,7 @@ etc., the objects in the `BadgeKit REST API
 much of the network communication as possible, while not including a lot of
 special data about the structure of the API methods.  So, you will still need
 to know which methods can be called on which API endpoints, etc.
-At this point, a list of those endpoints `exists here
+**At this point, a list of available API endpoints** `exists here
 <https://github.com/mozilla/badgekit-api/blob/update-docs/docs/api-endpoints.md>`_.
 
 As an example of translating between that list and this client, the list
