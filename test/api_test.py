@@ -180,3 +180,36 @@ class ExceptionTest(unittest.TestCase):
             self.fail("Exception should have been raised")
         except badgekit.APIError as e:
             self.assertTrue('json' in ('%s' % e).lower())
+
+
+class DefaultsTest(unittest.TestCase):
+    @httpretty.activate
+    def test_create_with_defaults(self):
+        a = badgekit.BadgeKitAPI('http://example.com/', 'asdf', defaults={'system': 'blah'})
+
+        httpretty.register_uri(httpretty.POST,
+                re.compile('example.com/.*'),
+                body='{}', status=201)
+
+        result = a.create(
+                'badge',
+                dict(slug='badge', name='Test Badge FTW'))
+
+        req = httpretty.last_request()
+        self.assertEqual(req.path, '/systems/blah/badges')
+
+    @httpretty.activate
+    def test_can_override_defaults(self):
+        a = badgekit.BadgeKitAPI('http://example.com/', 'asdf', defaults={'system': 'blah'})
+
+        httpretty.register_uri(httpretty.POST,
+                re.compile('example.com/.*'),
+                body='{}', status=201)
+
+        result = a.create(
+                'system',
+                dict(slug='sys2', name='Test Sys FTW'),
+                system=None)
+
+        req = httpretty.last_request()
+        self.assertEqual(req.path, '/systems')

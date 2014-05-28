@@ -30,6 +30,8 @@ URL is constructed.
 Note that these classes are listed as being part of :mod:`badgekit.api`, but you
 can import them straight from :mod:`badgekit`.
 """
+
+
 import requests
 import posixpath
 import requests_jwt
@@ -182,13 +184,14 @@ class BadgeKitAPI(object):
     :param baseurl: the URL of the badgekit-api server.
     :param secret: the client secret.
     :param key: the name of the client secret, for the server to see.
+    :param defaults: a dict of default arguments, which can be overridden by actual arguments to the functions.
 
     For the moment, the secret is just the same secret that is used between
     the two Node.js servers, badgekit-api and openbadges-badgekit.  Look
     for it in the environment variables of the badgekit-api server - maybe
     a file called `.env`.
     """
-    def __init__(self, baseurl, secret, key='master'):
+    def __init__(self, baseurl, secret, key='master', defaults=None):
         self.baseurl = baseurl
 
         auth = requests_jwt.JWTAuth(secret)
@@ -198,6 +201,11 @@ class BadgeKitAPI(object):
         auth.add_field('method', requests_jwt.payload_method)
         auth.add_field('body', requests_jwt.payload_body)
         self.auth = auth
+
+        if defaults:
+            self.defaults = dict(defaults)
+        else:
+            self.defaults = {}
 
     def ping(self):
         """Tests the server's availability - returns True if
@@ -226,7 +234,8 @@ class BadgeKitAPI(object):
         for example, the above code would hit ``/systems/mysystem/badges``.
         """
         kind_plural = _api_plural(kind)
-        path = _make_path(kind_plural, **kwargs)
+        path_args = dict(self.defaults, **kwargs)
+        path = _make_path(kind_plural, **path_args)
         resp = requests.get(urljoin(self.baseurl, path), auth=self.auth)
         resp_obj = self._json_loads(resp.text)
         if resp.status_code != 200:
@@ -247,7 +256,8 @@ class BadgeKitAPI(object):
         object, and you just want to get that one object - for example, the
         above code would hit ``/systems/mysystem/badges/stupendous-badge``.
         """
-        path = _make_path(**kwargs)
+        path_args = dict(self.defaults, **kwargs)
+        path = _make_path(**path_args)
         resp = requests.get(urljoin(self.baseurl, path), auth=self.auth)
         resp_obj = self._json_loads(resp.text)
 
@@ -272,7 +282,8 @@ class BadgeKitAPI(object):
         For instance, the above code would post to ``/systems/mysystem/badges`` with
         ``data`` as the body of the request.
         """
-        path = _make_path(_api_plural(kind), **kwargs)
+        path_args = dict(self.defaults, **kwargs)
+        path = _make_path(_api_plural(kind), **path_args)
         resp = requests.post(urljoin(self.baseurl, path),
                 data=data,
                 auth=self.auth)
