@@ -21,8 +21,8 @@ setup(
     license="MIT",
     packages=find_packages(),
     install_requires=[
-        'PyJWT',
         'requests',
+        'requests-jwt>=0.3',
         'setuptools',
         ],
     tests_require=[

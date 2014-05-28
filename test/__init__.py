@@ -7,9 +7,6 @@ all_modules = []
 from . import api_test
 all_modules.append(api_test)
 
-from . import jwt_auth_test
-all_modules.append(jwt_auth_test)
-
 
 def suite():
     suite = unittest.TestSuite()

@@ -32,7 +32,7 @@ can import them straight from :mod:`badgekit`.
 """
 import requests
 import posixpath
-from . import jwt_auth
+import requests_jwt
 from distutils.version import StrictVersion
 try:
     from urlparse import urljoin
@@ -191,12 +191,12 @@ class BadgeKitAPI(object):
     def __init__(self, baseurl, secret, key='master'):
         self.baseurl = baseurl
 
-        auth = jwt_auth.JWTAuth(secret)
+        auth = requests_jwt.JWTAuth(secret)
         auth.add_field('key', key)
         auth.expire(30)
-        auth.add_field('path', jwt_auth.payload_path)
-        auth.add_field('method', jwt_auth.payload_method)
-        auth.add_field('body', jwt_auth.payload_body)
+        auth.add_field('path', requests_jwt.payload_path)
+        auth.add_field('method', requests_jwt.payload_method)
+        auth.add_field('body', requests_jwt.payload_body)
         self.auth = auth
 
     def ping(self):
