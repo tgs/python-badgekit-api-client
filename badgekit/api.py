@@ -81,10 +81,18 @@ class ResourceNotFound(CodedBadgeKitException):
 class ResourceConflict(CodedBadgeKitException):
     "Thrown when POSTing an item that already exists"
 
+class ValidationError(CodedBadgeKitException):
+    "Thrown when creating an item with improper or missing fields"
+
+    def __str__(self):
+        super_str = super(ValidationError, self).__str__()
+        bad_fields = ", ".join([det['field'] for det in self.info.get('details', [])])
+        return ": ".join([super_str, bad_fields])
 
 errors = {
         'ResourceNotFound': ResourceNotFound,
         'ResourceConflict': ResourceConflict,
+        'ValidationError': ValidationError,
         }
 
 def raise_error(resp_obj, request):
