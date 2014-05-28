@@ -105,8 +105,8 @@ def raise_error(resp_obj, request):
         resp_obj['code']
     except:
         raise APIError(
-                "Problem with %s %s, and Badgekit-API didn't return a comprehensible error." \
-                        % (request.method, request.url))
+                "Problem with %s %s: %s"
+                        % (request.method, request.url, repr(resp_obj)))
 
     raise exc_type(resp_obj, request)
 
