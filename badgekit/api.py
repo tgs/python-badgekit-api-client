@@ -195,7 +195,7 @@ class BadgeKitAPI(object):
     The ``defaults`` argument can be quite useful.  If your code will only have
     to work with one badge system at a time - the badge system is in a configuration
     file, for instance - then you can set it once and then not have to pass extra
-    info around to all your code that uses the api.
+    info around to all your code that uses the api:
 
     >>> bk = BadgeKitAPI('http://api.example.com/', 'secr3t', defaults={'system': 'mysystem'})
     """
