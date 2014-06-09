@@ -343,3 +343,16 @@ class BadgeKitAPI(object):
                     + "of BadgeKit-API server required, but "
                     + "{server_url} is only version {version}.")
                     .format(**locals()))
+
+    def get_public_url(self, url):
+        """
+        GET a URL, and parse its JSON, checking for known errors.  Useful for
+        public URLs on the BadgeKit API server (e.g. assertions).
+        """
+        resp = requests.get(url)
+        resp_obj = self._json_loads(resp.text)
+
+        if resp.status_code != 200:
+            raise_error(resp_obj, resp.request)
+
+        return resp_obj
